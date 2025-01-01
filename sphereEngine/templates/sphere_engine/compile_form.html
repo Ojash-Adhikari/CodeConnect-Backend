@@ -1,0 +1,127 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Code Compiler</title>
+</head>
+<body>
+    <h1>Submit Code for Compilation</h1>
+    <form id="compile-form">
+        {% csrf_token %}
+        <label for="source_code">Source Code:</label>
+        <textarea id="source_code" name="source_code" rows="10" cols="50"></textarea><br>
+        <label for="compilerId">Compiler:</label>
+        <select id="compilerId" name="compilerId">
+            {% for compiler in compilers %}
+                <option value="{{ compiler.id }}">{{ compiler.name }}</option>
+            {% endfor %}
+        </select><br>
+        <label for="versionId">Version:</label>
+        <select id="versionId" name="versionId">
+            {% for compiler in compilers %}
+                {% for version in compiler.versions %}
+                    <option value="{{ version.id }}">{{ compiler.name }} - {{ version.name }}</option>
+                {% endfor %}
+            {% endfor %}
+        </select><br>
+        <button type="submit">Compile</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('compile-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+
+            fetch("{% url 'compile_code' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    source_code: formData.get('source_code'),
+                    compilerId: formData.get('compilerId'),
+                    versionId: formData.get('versionId')
+                })
+            })
+            .then(response => response.json().catch(() => ({error: 'Invalid JSON response'})))
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('result').innerText = 'Error: ' + data.error;
+                } else {
+                    document.getElementById('result').innerText = JSON.stringify(data, null, 2);
+                }
+            })
+            .catch(error => {
+                document.getElementById('result').innerText = 'Error: ' + error;
+            });
+        });
+    </script>
+</body>
+</html> -->
+<!-- ----------------------------------++++----------------------- -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Code Compiler</title>
+</head>
+<body>
+    <h1>Submit Code for Compilation</h1>
+    <form id="compile-form">
+        {% csrf_token %}
+        <label for="source_code">Source Code:</label>
+        <textarea id="source_code" name="source_code" rows="10" cols="50"></textarea><br>
+        <label for="compilerId">Compiler:</label>
+        <select id="compilerId" name="compilerId">
+            {% for compiler in compilers %}
+                <option value="{{ compiler.id }}">{{ compiler.name }}</option>
+            {% endfor %}
+        </select><br>
+        <label for="versionId">Version:</label>
+        <select id="versionId" name="versionId">
+            {% for compiler in compilers %}
+                {% for version in compiler.versions %}
+                    <option value="{{ version.id }}">{{ version.name }}</option>
+                {% endfor %}
+            {% endfor %}
+        </select><br>
+        <button type="submit">Compile</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('compile-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+
+            fetch("{% url 'compile_code' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    source_code: formData.get('source_code'),
+                    compilerId: formData.get('compilerId'),
+                    versionId: formData.get('versionId')
+                })
+            })
+            .then(response => response.json().catch(() => ({error: 'Invalid JSON response'})))
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('result').innerText = 'Error: ' + data.error;
+                } else {
+                    document.getElementById('result').innerText = JSON.stringify(data, null, 2);
+                }
+            })
+            .catch(error => {
+                document.getElementById('result').innerText = 'Error: ' + error;
+            });
+        });
+    </script>
+</body>
+</html>

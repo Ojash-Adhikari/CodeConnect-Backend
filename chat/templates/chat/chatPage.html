@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Code Compiler Chat</title>
+</head>
+
+<body>
+  <center>
+    <h1>Hello, Welcome to my chat site! {{ request.user }}</h1>
+  </center>
+  <br>
+
+  {% if request.user.is_authenticated %}
+  <center> Logout from chat Page <a href="{% url 'logout-user' %}">Logout</a></center>
+  {% endif %}
+
+  <div id="id_chat_item_container"
+    style="font-size: 20px; max-height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+    <!-- Chat messages will be displayed here -->
+  </div>
+
+  <br />
+
+  <!-- Select Compiler -->
+  <label for="id_compiler_select">Select Compiler:</label>
+  <select id="id_compiler_select">
+    {% for compiler in compilers %}
+    <option value="{{ compiler.id }}">{{ compiler.name }}</option>
+    {% endfor %}
+  </select>
+
+  <!-- Select Version -->
+  <label for="id_version_select">Select Version:</label>
+  <select id="id_version_select">
+    {% for compiler in compilers %}
+    {% for version in compiler.versions %}
+    <option value="{{ version.id }}">{{ version.name }}</option>
+    {% endfor %}
+    {% endfor %}
+
+  </select>
+
+  <br /><br />
+
+  <input type="text" id="id_message_send_input" placeholder="Enter code or message..."
+    style="width: 80%; padding: 5px;" />
+  <button type="submit" id="id_message_send_button" style="padding: 5px 10px;">Send Message</button>
+
+  <!-- Embed JSON data safely -->
+  <script id="compilers-data" type="application/json">
+    {{ compilers|safe }}
+  </script>
+
+  <script>
+    // WebSocket connection setup
+    const chatSocket = new WebSocket("ws://" + window.location.host + "/ws/chat/");
+
+    chatSocket.onopen = function (e) {
+      console.log("WebSocket connection established!");
+    };
+
+    chatSocket.onclose = function (e) {
+      console.log("WebSocket connection closed!", e);
+    };
+
+    chatSocket.onerror = function (e) {
+      console.error("WebSocket error:", e);
+    };
+
+    chatSocket.onmessage = function (e) {
+      const data = JSON.parse(e.data);
+      console.log("Message received:", data);
+      const messageDiv = document.createElement("div");
+      messageDiv.innerHTML = "<strong>" + data.username + ":</strong> " + data.message;
+      document.querySelector("#id_chat_item_container").appendChild(messageDiv);
+      document.querySelector("#id_chat_item_container").scrollTop = document.querySelector("#id_chat_item_container").scrollHeight;
+    };
+
+
+    document.querySelector("#id_message_send_button").onclick = function () {
+      const messageInput = document.querySelector("#id_message_send_input").value.trim();
+      const compilerId = document.querySelector("#id_compiler_select").value;
+      const versionId = document.querySelector("#id_version_select").value;
+
+      if (messageInput) {
+        const messageData = {
+          message: `compile:${messageInput}`,
+          username: "{{ request.user.username }}",
+          compiler_id: compilerId,
+          version_id: versionId
+        };
+
+        console.log("Sending message:", messageData);
+
+        try {
+          chatSocket.send(JSON.stringify(messageData));
+        } catch (err) {
+          console.error("Error sending message:", err);
+        }
+
+        document.querySelector("#id_message_send_input").value = "";
+        document.querySelector("#id_message_send_input").focus();
+      }
+    };
+  </script>
+</body>
+
+</html>
