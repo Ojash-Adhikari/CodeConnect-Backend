@@ -7,6 +7,8 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from users.serializers import UserSerializer
 
+from cities_light.models import Country
+
 class BaseModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = BaseModel
@@ -71,18 +73,27 @@ class CertificationSerializer(serializers.ModelSerializer):
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
-        fields = BaseModelSerializer.Meta.fields + ("name", "description","courseId")
+        fields = BaseModelSerializer.Meta.fields + ("name","description","language","courseId","picture","duration","price","is_activated")
 
 class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
-        fields = BaseModelSerializer.Meta.fields + ("course", "name","description","picture")   
+        fields = BaseModelSerializer.Meta.fields + ('course', 'name', 'description', 'picture', 'duration', 'video', 'sections')   
 
 class EnrollmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Enrollment
         fields = BaseModelSerializer.Meta.fields + ("user", "course", "enrolled_at")
 
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = BaseModelSerializer.Meta.fields + ("title","is_accepted")
+
+class ActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Activity
+        fields = BaseModelSerializer.Meta.fields + ("title",)
 
 class ExamSerializer(serializers.ModelSerializer):
     class Meta:
@@ -92,7 +103,7 @@ class ExamSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = BaseModelSerializer.Meta.fields + ("user", "course", "description")
+        fields = BaseModelSerializer.Meta.fields + ("user", "course", "description","rating")
 
 class ForumPostSerializer(serializers.ModelSerializer):
     class Meta:
@@ -113,6 +124,11 @@ class UsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = BaseModelSerializer.Meta.fields + ("name","email")
+
+class CountrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Country
+        fields = ['id', 'name_ascii', 'slug','geoname_id']
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):

@@ -1,6 +1,8 @@
 from django.urls import path, include
 from chat import views as chat_views
 from django.contrib.auth.views import LoginView, LogoutView
+from .views import generate_question_api
+from .views import RandomQuestionAPIView
 
 
 urlpatterns = [
@@ -10,4 +12,6 @@ urlpatterns = [
     # login-section
     path("chat/auth/login/", LoginView.as_view(template_name="chat/LoginPage.html"), name="login-user"),
     path("chat/auth/logout/", LogoutView.as_view(), name="logout-user"),
+    path('generate-question/', generate_question_api),
+    path('random-question/', RandomQuestionAPIView.as_view(), name='random-question'),
 ]

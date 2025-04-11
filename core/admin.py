@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import (CustomUser, UserProfile,Certification,Course,
-ForumPost,Exam,Enrollment,Lesson,UserComplaint)
+ForumPost,Exam,Enrollment,Lesson,UserComplaint, Activity)
 
 
 class CustomUserAdmin(admin.ModelAdmin):
@@ -34,6 +34,9 @@ class ExamAdmin(admin.ModelAdmin):
 class ForumPostAdmin(admin.ModelAdmin):
     model = ForumPost
 
+class ActivityAdmin(admin.ModelAdmin):
+    model = Activity
+
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(Certification, CertificationAdmin)
@@ -43,4 +46,5 @@ admin.site.register(Enrollment, EnrollmentAdmin)
 admin.site.register(UserComplaint,UserComplaintAdmin)
 admin.site.register(Exam, ExamAdmin)
 admin.site.register(ForumPost, ForumPostAdmin)
+admin.site.register(Activity, ActivityAdmin)
 

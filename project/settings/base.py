@@ -2,14 +2,14 @@ import os
 import dj_database_url
 from corsheaders.defaults import default_headers
 from datetime import timedelta
-
+from decouple import config
 
 from .env import ABS_PATH, ENV_BOOL, ENV_INT, ENV_LIST, ENV_STR, BASE_DIR
 
 DEBUG = ENV_BOOL("DEBUG", False)
 SECRET_KEY = ENV_STR("SECRET_KEY", "secret" if DEBUG else "")
 # ALLOWED_HOSTS = ENV_LIST("ALLOWED_HOSTS", ",", ["*"] if DEBUG else [])
-ALLOWED_HOSTS = ['100.64.222.154','127.0.0.1']
+ALLOWED_HOSTS = ['100.64.222.154','127.0.0.1','localhost']
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "daphne", 
+    "channels",
     "django.contrib.staticfiles",
     "django.contrib.sites",
     "corsheaders",
@@ -28,12 +29,18 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "dj_rest_auth",
     "dj_rest_auth.registration",
+    "rest_framework_simplejwt",
     "core.apps.CoreConfig",
     "users.apps.UsersConfig",
     "chat.apps.ChatConfig",
     "openapi.apps.OpenAPIConfig",
     "sphereEngine.apps.SphereEngineConfig",
-    "channels",
+    "drf_spectacular",
+    "django_countries",
+    "phonenumber_field",
+    "django_extensions",
+    "cities_light",
+    "django_celery_results",
     
 ]
 
@@ -138,9 +145,7 @@ CHANNEL_LAYERS = {
 }
 
 # email settings
-EMAIL_BACKEND = "django.core.mail.backends.{}.EmailBackend".format(
-    ENV_STR("EMAIL_BACKEND", "console" if DEBUG else "smtp")
-)
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = ENV_STR("EMAIL_HOST", "localhost")
 EMAIL_HOST_USER = ENV_STR("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = ENV_STR("EMAIL_HOST_PASSWORD", "")
@@ -151,13 +156,16 @@ DEFAULT_FROM_EMAIL = ENV_STR("DEFAULT_FROM_EMAIL", SERVER_EMAIL)
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.TokenAuthentication",
     ),
+
     "TEST_REQUEST_DEFAULT_FORMAT": "json",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 100,
     "COERCE_DECIMAL_TO_STRING": False,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 # log to console, assume the supervisor/system runner will take care of the logs
@@ -184,7 +192,20 @@ LOGGING = {
         },
     },
 }
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT', cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
+EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=False, cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_SUBJECT_PREFIX = '[Django]'
 
+
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+EMAIL_SUBJECT_PREFIX = '[Django]'
+
+# Sphere Engine Configuration
 SPHERE_ENGINE_COMPILER_ACCESS_TOKEN = '409e09b9909c4e230776c63c69e09469'
 SPHERE_ENGINE_PROBLEMS_ACCESS_TOKEN = '763cea7fd8efbf89c879314221d8c2ab'
 SPHERE_ENGINE_COMPILER_ENDPOINT = '203deddf.compilers.sphere-engine.com'
@@ -209,3 +230,15 @@ USE_X_FORWARDED_HOST = ENV_BOOL("USE_X_FORWARDED_HOST")
 USE_X_FORWARDED_PORT = ENV_BOOL("USE_X_FORWARDED_PORT")
 
 LOGOUT_REDIRECT_URL="login-user"
+
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "CodeConnect System API",
+    "DESCRIPTION": "API for Connect Connect API",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}
