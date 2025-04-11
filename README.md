@@ -67,3 +67,36 @@ have no effect. If you want to use SQLite with docker, mount a docker
 volume and place the SQLite database inside it.
 
 For more information on the docker build process, see the included `Dockerfile`.
+
+
+## Celery 
+run:
+
+--> celery -A project worker --loglevel=info
+
+and,
+run:
+
+--> celery -A project flower
+
+to get a detailed stats of celery worker processes and to verify if the redis is connected or not
+
+
+to activate workers for the backend
+
+## Lastly, start the Redis server like so:
+
+-->sudo service redis-server start
+
+## Connect to Redis
+Once Redis is running, you can test it by running :
+
+--> redis-cli
+
+## Test the connection with the ping command:
+
+127.0.0.1:6379> ping
+PONG
+
+## For Demonstration purpose Only
+--> http://localhost:8000/api/v1/random-question/?difficulty=medium

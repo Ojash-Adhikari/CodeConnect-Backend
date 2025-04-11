@@ -1,13 +1,16 @@
 from django.db import models
 from django.conf import settings
 from django.core.validators import (MaxLengthValidator,MinLengthValidator,RegexValidator,)
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
 from django_countries.fields import CountryField
 from phonenumber_field.modelfields import PhoneNumberField
 import random
 import string
+from rest_framework.exceptions import ValidationError
 from .choices import UserCompaintChoices
+from django.core.validators import FileExtensionValidator
 
 class BaseManager(models.Manager):
     def get_queryset(self):
@@ -144,6 +147,14 @@ class CustomUser(BaseModel):
     )
 
 class Course(BaseModel):
+    def validate_image(fieldfile_obj):
+        if hasattr(fieldfile_obj, "size"):  # Check if file has a size attribute
+            filesize = fieldfile_obj.size
+            megabyte_limit = 5.0
+            if filesize > megabyte_limit * 1024 * 1024:
+                raise ValidationError(f"Max file size is {megabyte_limit}MB")
+        else:
+            raise ValidationError("Invalid file uploaded")
     name = models.CharField(
         max_length=100,
         help_text="The name of the course",
@@ -151,11 +162,17 @@ class Course(BaseModel):
     description = models.TextField(
         help_text="Description of the course",
     )
+    language = models.CharField(
+        max_length=100,
+        help_text="Programming Language Data",
+        null=True
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         help_text="Date and time when the course was created",
     )
     updated_at = models.DateTimeField(
+        auto_now_add=True,
         help_text="Date and time when the course was last updated",
     )
     courseId = models.CharField(
@@ -166,10 +183,26 @@ class Course(BaseModel):
         blank=True,
         help_text="Unique ID for the course",
     )
+    picture = models.ImageField(
+        upload_to="course/coursepicture/",
+        max_length=255,
+        null=True,
+        help_text="Course picture entered by admin",
+        validators=[validate_image]
+    )
     duration = models.CharField(
         max_length=50,
         null=True,
         blank=True,
+    )
+    price = models.DecimalField(
+        max_digits=6, 
+        decimal_places=2,
+        null=True
+    )
+    is_activated = models.BooleanField(
+        default=False,
+        help_text="Field which allows or disallows the course to be rendered for users"
     )
     def save(self, *args, **kwargs):
         if not self.courseId:
@@ -182,6 +215,10 @@ class Course(BaseModel):
         return ''.join(random.choice(characters) for _ in range(length))
 
 class Lesson(BaseModel):
+    def user_directory_path(instance, filename):
+
+        return "user_{0}/{1}".format(instance.created_by, filename)
+    
     course = models.ForeignKey(
         "core.Course",
         related_name="lessons",
@@ -210,6 +247,19 @@ class Lesson(BaseModel):
         null=True,
         blank=True,
     )
+    video = models.FileField(
+        upload_to=user_directory_path,
+        null = True,
+        blank=True,
+        validators=[FileExtensionValidator(allowed_extensions=['mp4', 'mov', 'avi'])],  # You can validate video file types
+        help_text="Lesson video entered by admin",
+    )
+    sections = models.JSONField(  # JSONField for storing structured lesson content, as per your frontend data structure
+        null=True,
+        blank=True,
+        help_text="The sections of the lesson (title, description, images, videos, etc.)"
+    )
+
 
 class Enrollment(BaseModel):
     user = models.ForeignKey(
@@ -227,6 +277,10 @@ class Enrollment(BaseModel):
     enrolled_at = models.DateTimeField(
         auto_now_add=True,
         help_text="Date and time when the user enrolled in the course",
+    )
+    is_enrollment_complete = models.BooleanField(
+        default=False,
+        help_text="To confirm user enrollment"
     )
 
 
@@ -300,6 +354,38 @@ class Review(BaseModel):
     )
     description = models.TextField(
         max_length=255,
+    )
+    rating = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        null=True,
+        help_text="Rating score between 1 and 5"
+    )
+
+class Activity(BaseModel):
+    """
+    Standard model to store activity used by signals
+    """
+    title = models.TextField(
+        max_length=255,
+        help_text="The activity that was performed"
+    )
+
+class Notification(BaseModel):
+    """
+    Course Acceptance Model to pass to main Admin
+    """
+    course = models.ForeignKey(
+        "core.Course",
+        related_name="notifications",
+        on_delete=models.CASCADE,
+        help_text="The course for which the acceptance is required",
+    )
+    title = models.CharField(
+        max_length=200,
+        null=True
+    )
+    is_accepted = models.BooleanField(
+        default=False,
     )
 
 class ForumPost(BaseModel):

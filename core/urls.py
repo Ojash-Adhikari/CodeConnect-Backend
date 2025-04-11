@@ -2,7 +2,8 @@ from django.urls import path, include
 from rest_framework import routers
 
 from .views import (CustomUserViewSet, UserProfileViewSet, CertificationViewSet, CourseViewSet,
-                    EnrollmentViewSet, ExamViewSet, ForumPostViewSet,LessonViewSet,UserComplaintViewSet,ReviewViewSet)
+                    EnrollmentViewSet, ExamViewSet, ForumPostViewSet,LessonViewSet,
+                    UserComplaintViewSet,ReviewViewSet,CountryListView, NotificationViewSet, ActivityViewSet)
 
 app_name = "core"
 
@@ -20,12 +21,16 @@ urlpatterns = [
     path("core/course/", CourseViewSet.as_view({'get': 'list', 'post': 'create'}), name='course-list'),
     path("core/course/<int:pk>/", CourseViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='course-detail'),
 
-    path("core/course/lesson", LessonViewSet.as_view({'get': 'list', 'post': 'create'}), name='lesson-list'),
+    path("core/course/lesson/", LessonViewSet.as_view({'get': 'list', 'post': 'create'}), name='lesson-list'),
     path("core/course/lesson/<int:pk>/", LessonViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='lesson-detail'),
-
+    path('core/course/lesson/<int:pk>/upload-picture/', LessonViewSet.as_view({'put': 'upload_lesson_picture'}), name='lesson-upload-picture'),
+    path('core/course/lesson/<int:pk>/upload-video/', LessonViewSet.as_view({'put': 'upload_lesson_video'}), name='lesson-upload-video'),
 
     path("core/enrollment/", EnrollmentViewSet.as_view({'get': 'list', 'post': 'create'}), name='enrollment-list'),
     path("core/enrollment/<int:pk>/", EnrollmentViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='enrollment-detail'),
+
+    path("core/notification/", NotificationViewSet.as_view({'get': 'list', 'post': 'create'}), name='notification-list'),
+    path("core/notification/<int:pk>/", NotificationViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='notification-detail'),
 
     path("core/complaints/", UserComplaintViewSet.as_view({'get': 'list', 'post': 'create'}), name='complaint-list'),
     path("core/complaints/<int:pk>/", UserComplaintViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='complaint-detail'),
@@ -36,7 +41,12 @@ urlpatterns = [
     path("core/exam/", ExamViewSet.as_view({'get': 'list', 'post': 'create'}), name='exam-list'),
     path("core/exam/<int:pk>/", ExamViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='exam-detail'),
 
+    path("core/activity/", ActivityViewSet.as_view({'get': 'list', 'post': 'create'}), name='activity-list'),
+
     path("core/forum-post/", ForumPostViewSet.as_view({'get': 'list', 'post': 'create'}), name='forumpost-list'),
     path("core/forum-post/<int:pk>/", ForumPostViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='forumpost-detail'),
+
+    path('core/countries/', CountryListView.as_view(), name='country-list'),
+    
     path("",include("users.urls")),
 ]
